@@ -1,0 +1,2292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1e3a8a">
+    <title>M-Swasth Agent Dashboard</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    
+    <!-- jQuery & Select2 for Searchable Dropdown -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <style>
+        body { 
+            background-color: #e2e8f0; 
+            color: #1e293b; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            min-height: 100vh;
+        }
+        .header-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        /* 3D Card Effect */
+        .card-3d { 
+            background: linear-gradient(145deg, #ffffff, #f1f5f9);
+            border-radius: 16px; 
+            padding: 24px; 
+            box-shadow: 8px 8px 16px #cbd5e1, -8px -8px 16px #ffffff;
+            border: 1px solid #e2e8f0;
+            border-bottom: 5px solid #cbd5e1;
+            border-right: 2px solid #cbd5e1;
+            transition: transform 0.2s ease;
+        }
+        .card-3d:hover {
+            transform: translateY(-2px);
+        }
+
+        /* 3D Inner Elements */
+        .inner-3d {
+            background: #f8fafc;
+            box-shadow: inset 4px 4px 8px #cbd5e1, inset -4px -4px 8px #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .accent-orange { color: #ea580c; }
+        .bg-accent-orange { background: linear-gradient(135deg, #ea580c 0%, #f59e0b 100%); }
+        .accent-blue { color: #1e3a8a; }
+
+        .filter-select { 
+            background-color: #ffffff; 
+            color: #1e293b; 
+            border: 2px solid #cbd5e1; 
+            border-bottom: 4px solid #94a3b8;
+            border-radius: 10px; 
+            padding: 12px 16px; 
+            outline: none; 
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 1.1rem;
+            min-width: 180px;
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.05);
+            transition: all 0.1s;
+        }
+        .filter-select:active {
+            border-bottom: 2px solid #94a3b8;
+            transform: translateY(2px);
+        }
+        .filter-select:focus { border-color: #f59e0b; }
+
+        /* 3D Button */
+        .btn-3d {
+            background: linear-gradient(135deg, #ea580c 0%, #f59e0b 100%);
+            border-bottom: 4px solid #c2410c;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.1s;
+        }
+        .btn-3d:active {
+            border-bottom: 0px solid #c2410c;
+            transform: translateY(4px);
+        }
+
+        /* 3D Text Shadow */
+        .text-3d {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.15);
+        }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* Searchable Select2 Box Design */
+        .select2-container--default .select2-selection--multiple {
+            background-color: #ffffff !important;
+            border: 2px solid #cbd5e1 !important;
+            border-bottom: 4px solid #94a3b8 !important;
+            border-radius: 10px !important;
+            min-height: 48px !important;
+            padding: 4px !important;
+            font-weight: 800 !important;
+            color: #1e293b !important;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #e0f2fe !important;
+            border: 1px solid #7dd3fc !important;
+            color: #0369a1 !important;
+            border-radius: 6px !important;
+            padding: 4px 8px !important;
+            margin-top: 6px !important;
+            font-size: 0.95rem !important;
+        }
+    </style>
+</head>
+<body class="pb-12">
+    <!-- Header -->
+    <div class="header-bg text-white mb-8 relative z-10 border-b-[6px] border-[#0f172a]">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <!-- Exact Circular Image Logo for Header -->
+                <div class="bg-white rounded-full shadow-[4px_4px_10px_rgba(0,0,0,0.3)] overflow-hidden h-14 w-14 border-2 border-slate-200 flex justify-center items-center font-bold text-slate-800 text-xs">
+                  <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1e3a8a">
+    <title>M-Swasth Agent Dashboard</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    
+    <!-- jQuery & Select2 for Searchable Dropdown -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <style>
+        body { 
+            background-color: #e2e8f0; 
+            color: #1e293b; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            min-height: 100vh;
+        }
+        .header-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        /* 3D Card Effect */
+        .card-3d { 
+            background: linear-gradient(145deg, #ffffff, #f1f5f9);
+            border-radius: 16px; 
+            padding: 24px; 
+            box-shadow: 8px 8px 16px #cbd5e1, -8px -8px 16px #ffffff;
+            border: 1px solid #e2e8f0;
+            border-bottom: 5px solid #cbd5e1;
+            border-right: 2px solid #cbd5e1;
+            transition: transform 0.2s ease;
+        }
+        .card-3d:hover {
+            transform: translateY(-2px);
+        }
+
+        /* 3D Inner Elements */
+        .inner-3d {
+            background: #f8fafc;
+            box-shadow: inset 4px 4px 8px #cbd5e1, inset -4px -4px 8px #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .accent-orange { color: #ea580c; }
+        .bg-accent-orange { background: linear-gradient(135deg, #ea580c 0%, #f59e0b 100%); }
+        .accent-blue { color: #1e3a8a; }
+
+        .filter-select { 
+            background-color: #ffffff; 
+            color: #1e293b; 
+            border: 2px solid #cbd5e1; 
+            border-bottom: 4px solid #94a3b8;
+            border-radius: 10px; 
+            padding: 12px 16px; 
+            outline: none; 
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 1.1rem;
+            min-width: 180px;
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.05);
+            transition: all 0.1s;
+        }
+        .filter-select:active {
+            border-bottom: 2px solid #94a3b8;
+            transform: translateY(2px);
+        }
+        .filter-select:focus { border-color: #f59e0b; }
+
+        /* 3D Button */
+        .btn-3d {
+            background: linear-gradient(135deg, #ea580c 0%, #f59e0b 100%);
+            border-bottom: 4px solid #c2410c;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.1s;
+        }
+        .btn-3d:active {
+            border-bottom: 0px solid #c2410c;
+            transform: translateY(4px);
+        }
+
+        /* 3D Text Shadow */
+        .text-3d {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.15);
+        }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* Searchable Select2 Box Design */
+        .select2-container--default .select2-selection--multiple {
+            background-color: #ffffff !important;
+            border: 2px solid #cbd5e1 !important;
+            border-bottom: 4px solid #94a3b8 !important;
+            border-radius: 10px !important;
+            min-height: 48px !important;
+            padding: 4px !important;
+            font-weight: 800 !important;
+            color: #1e293b !important;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #e0f2fe !important;
+            border: 1px solid #7dd3fc !important;
+            color: #0369a1 !important;
+            border-radius: 6px !important;
+            padding: 4px 8px !important;
+            margin-top: 6px !important;
+            font-size: 0.95rem !important;
+        }
+    </style>
+</head>
+<body class="pb-12">
+    <!-- Header -->
+    <div class="header-bg text-white mb-8 relative z-10 border-b-[6px] border-[#0f172a]">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <!-- Exact Circular Image Logo for Header -->
+                <div class="bg-white rounded-full shadow-[4px_4px_10px_rgba(0,0,0,0.3)] overflow-hidden h-14 w-14 border-2 border-slate-200 flex justify-center items-center font-bold text-slate-800 text-xs">
+                 <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1e3a8a">
+    <title>M-Swasth Agent Dashboard</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    
+    <!-- jQuery & Select2 for Searchable Dropdown -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <style>
+        body { 
+            background-color: #e2e8f0; 
+            color: #1e293b; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            min-height: 100vh;
+        }
+        .header-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        /* 3D Card Effect */
+        .card-3d { 
+            background: linear-gradient(145deg, #ffffff, #f1f5f9);
+            border-radius: 16px; 
+            padding: 24px; 
+            box-shadow: 8px 8px 16px #cbd5e1, -8px -8px 16px #ffffff;
+            border: 1px solid #e2e8f0;
+            border-bottom: 5px solid #cbd5e1;
+            border-right: 2px solid #cbd5e1;
+            transition: transform 0.2s ease;
+        }
+        .card-3d:hover {
+            transform: translateY(-2px);
+        }
+
+        /* 3D Inner Elements */
+        .inner-3d {
+            background: #f8fafc;
+            box-shadow: inset 4px 4px 8px #cbd5e1, inset -4px -4px 8px #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .accent-orange { color: #ea580c; }
+        .bg-accent-orange { background: linear-gradient(135deg, #ea580c 0%, #f59e0b 100%); }
+        .accent-blue { color: #1e3a8a; }
+
+        .filter-select { 
+            background-color: #ffffff; 
+            color: #1e293b; 
+            border: 2px solid #cbd5e1; 
+            border-bottom: 4px solid #94a3b8;
+            border-radius: 10px; 
+            padding: 12px 16px; 
+            outline: none; 
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 1.1rem;
+            min-width: 180px;
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.05);
+            transition: all 0.1s;
+        }
+        .filter-select:active {
+            border-bottom: 2px solid #94a3b8;
+            transform: translateY(2px);
+        }
+        .filter-select:focus { border-color: #f59e0b; }
+
+        /* 3D Button */
+        .btn-3d {
+            background: linear-gradient(135deg, #ea580c 0%, #f59e0b 100%);
+            border-bottom: 4px solid #c2410c;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.1s;
+        }
+        .btn-3d:active {
+            border-bottom: 0px solid #c2410c;
+            transform: translateY(4px);
+        }
+
+        /* 3D Text Shadow */
+        .text-3d {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.15);
+        }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* Searchable Select2 Box Design */
+        .select2-container--default .select2-selection--multiple {
+            background-color: #ffffff !important;
+            border: 2px solid #cbd5e1 !important;
+            border-bottom: 4px solid #94a3b8 !important;
+            border-radius: 10px !important;
+            min-height: 48px !important;
+            padding: 4px !important;
+            font-weight: 800 !important;
+            color: #1e293b !important;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #e0f2fe !important;
+            border: 1px solid #7dd3fc !important;
+            color: #0369a1 !important;
+            border-radius: 6px !important;
+            padding: 4px 8px !important;
+            margin-top: 6px !important;
+            font-size: 0.95rem !important;
+        }
+    </style>
+</head>
+<body class="pb-12">
+    <!-- Header -->
+    <div class="header-bg text-white mb-8 relative z-10 border-b-[6px] border-[#0f172a]">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <!-- Exact Circular Image Logo for Header -->
+                <div class="bg-white rounded-full shadow-[4px_4px_10px_rgba(0,0,0,0.3)] overflow-hidden h-14 w-14 border-2 border-slate-200 flex justify-center items-center font-bold text-slate-800 text-xs">
+                   Logo
+                </div>
+                <div>
+                    <h1 class="text-3xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-200 text-3d">Analytics <span class="text-yellow-400">Pro</span></h1>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap items-center justify-center gap-4">
+                <div id="filtersContainer" class="hidden flex gap-4">
+                    <select id="dateSelect" class="filter-select"></select>
+                    <select id="agentSelect" class="filter-select"></select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- टैब स्विच करने के बटन्स -->
+    <div class="max-w-7xl mx-auto px-6 mb-6 flex flex-wrap justify-center gap-4 relative z-10">
+        <button onclick="switchTab('tab1')" id="btnTab1" class="btn-3d px-6 py-2 rounded-xl text-white font-bold bg-accent-orange">Break & Timings</button>
+        <button onclick="switchTab('tab2')" id="btnTab2" class="btn-3d px-6 py-2 rounded-xl text-white font-bold opacity-60">Hourly Cases Report</button>
+    </div>
+
+    <!-- पहला पेज (Tab 1) -->
+    <div id="tab1" class="block">
+        <div class="max-w-7xl mx-auto px-4 md:px-6 relative z-0">
+            
+            <div class="flex justify-center mb-6" id="headerUploadBtn">
+                <label for="csvFileInput" class="btn-3d text-white px-6 py-2.5 rounded-xl cursor-pointer font-extrabold block text-base border border-orange-400">
+                    📁 Upload CSV
+                </label>
+                <input type="file" id="csvFileInput" accept=".csv" class="hidden">
+            </div>
+
+            <div id="welcomeScreen" class="text-center mt-6 bg-white p-8 md:p-16 rounded-3xl shadow-[8px_8px_16px_#cbd5e1,_-8px_-8px_16px_#ffffff] max-w-3xl mx-auto border border-slate-200 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-blue-50 to-transparent"></div>
+                <div class="relative z-10">
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-slate-800 mb-4 text-3d">Welcome to Analytics Pro</h2>
+                    <p class="text-slate-600 text-lg font-medium mb-8">Upload your CSV file from the top right to view Break Timings and First/Last Case details.</p>
+                </div>
+            </div>
+
+            <div id="dashboardContent" class="hidden mt-6">
+                <!-- Tab 1 Data -->
+            </div>
+        </div>
+    </div>
+
+    <!-- दूसरा पेज (Tab 2: Hourly Cases) -->
+    <div id="tab2" class="hidden max-w-7xl mx-auto px-4 md:px-6 relative z-10">
+        <div class="card-3d mb-8">
+            <h2 class="text-2xl font-extrabold text-slate-800 mb-4 text-3d">Hourly Cases Analytics</h2>
+            
+            <div class="flex flex-wrap items-center gap-4 mb-6 p-4 inner-3d">
+                <input type="file" id="csvFileTab2" accept=".csv" class="hidden" onchange="handleTab2Upload(event)">
+                <label for="csvFileTab2" class="btn-3d text-white px-6 py-2.5 rounded-xl cursor-pointer font-extrabold shadow-md">
+                    📁 Upload Hourly CSV
+                </label>
+                
+                <select id="dateFilterTab2" class="filter-select" onchange="renderPivotTable()">
+                    <option value="All">All Dates</option>
+                </select>
+                
+                <div class="flex flex-col w-full md:w-auto flex-grow max-w-lg">
+                    <label class="text-xs font-bold text-slate-500 mb-1">Select Med Agent (Search Enabled)</label>
+                    <!-- Select Dropdown with Search Box -->
+                    <select id="agentFilterTab2" class="filter-select" multiple style="width:100%;">
+                    </select>
+                </div>
+            </div>
+
+            <!-- Pivot Table Container -->
+            <div class="inner-3d p-4 overflow-x-auto bg-white rounded-lg border border-slate-200 shadow-sm">
+                <table class="w-full border-collapse text-sm text-center whitespace-nowrap" id="pivotTable">
+                    <tbody>
+                        <tr>
+                            <td class="p-8 text-slate-400 font-bold text-lg">Please upload a CSV file to view the Hourly Cases Report.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Javascript Logic -->
+    <script>
+        function switchTab(tabId) {
+            document.getElementById('tab1').classList.toggle('hidden', tabId !== 'tab1');
+            document.getElementById('tab1').classList.toggle('block', tabId === 'tab1');
+            
+            document.getElementById('tab2').classList.toggle('hidden', tabId !== 'tab2');
+            document.getElementById('tab2').classList.toggle('block', tabId === 'tab2');
+
+            document.getElementById('btnTab1').classList.toggle('opacity-60', tabId !== 'tab1');
+            document.getElementById('btnTab2').classList.toggle('opacity-60', tabId !== 'tab2');
+            
+            document.getElementById('headerUploadBtn').style.display = (tabId === 'tab1') ? 'flex' : 'none';
+        }
+
+        let tab2Data = [];
+
+        function handleTab2Upload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    tab2Data = results.data;
+                    populateTab2Filters();
+                    renderPivotTable();
+                }
+            });
+        }
+
+        function populateTab2Filters() {
+            const dateSelect = document.getElementById('dateFilterTab2');
+            const agentSelect = document.getElementById('agentFilterTab2');
+            const $agentSelect = $(agentSelect);
+            
+            let dates = new Set();
+            let agents = new Set();
+
+            tab2Data.forEach(row => {
+                if(row['Date']) dates.add(row['Date']);
+                
+                // Advanced Agent Capture (Fix for Rajni N A and others)
+                let agentName = row['Med Agent'] || row['Agent'] || row['Name'] || row['Agent Name'];
+                if(!agentName) {
+                    let keys = Object.keys(row);
+                    let matchKey = keys.find(k => k.toLowerCase().includes('agent') || k.toLowerCase().includes('name'));
+                    if(matchKey) agentName = row[matchKey];
+                }
+                
+                if(agentName && agentName.trim() !== "") {
+                    agents.add(agentName.trim());
+                }
+            });
+
+            // Set Dates
+            dateSelect.innerHTML = '<option value="All">All Dates</option>';
+            dates.forEach(d => dateSelect.innerHTML += `<option value="${d}">${d}</option>`);
+
+            // Destroy Select2 before inserting new options
+            if ($agentSelect.hasClass("select2-hidden-accessible")) {
+                $agentSelect.select2('destroy');
+            }
+
+            // Set Agents & Sort Alphabetically
+            agentSelect.innerHTML = '';
+            let sortedAgents = Array.from(agents).sort();
+            sortedAgents.forEach(a => {
+                agentSelect.innerHTML += `<option value="${a}" selected>${a}</option>`;
+            });
+
+            // Initialize Searchable Dropdown (Select2)
+            $agentSelect.select2({
+                placeholder: "🔍 Search Agent Here...",
+                width: '100%',
+                allowClear: true
+            });
+
+            // Listen to select2 changes to update table
+            $agentSelect.on('change', function() {
+                renderPivotTable();
+            });
+        }
+
+        function renderPivotTable() {
+            if(tab2Data.length === 0) return;
+
+            const selectedDate = document.getElementById('dateFilterTab2').value;
+            
+            // Get selected options accurately from Select2
+            const selectedAgents = $('#agentFilterTab2').val() || [];
+
+            let filteredData = tab2Data.filter(row => {
+                const dateMatch = selectedDate === 'All' || row['Date'] === selectedDate;
+                
+                // Match with robust agent extraction
+                let agentName = row['Med Agent'] || row['Agent'] || row['Name'] || row['Agent Name'];
+                if(!agentName) {
+                    let keys = Object.keys(row);
+                    let matchKey = keys.find(k => k.toLowerCase().includes('agent') || k.toLowerCase().includes('name'));
+                    if(matchKey) agentName = row[matchKey];
+                }
+                agentName = agentName ? agentName.trim() : "";
+
+                const agentMatch = selectedAgents.includes(agentName);
+                return dateMatch && agentMatch;
+            });
+
+            let pivot = {};
+            const hours = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+            
+            selectedAgents.forEach(agent => {
+                pivot[agent] = { total: 0 };
+                hours.forEach(h => pivot[agent][h] = 0);
+            });
+
+            filteredData.forEach(row => {
+                let agent = row['Med Agent'] || row['Agent'] || row['Name'] || row['Agent Name'];
+                if(!agent) {
+                    let keys = Object.keys(row);
+                    let matchKey = keys.find(k => k.toLowerCase().includes('agent') || k.toLowerCase().includes('name'));
+                    if(matchKey) agent = row[matchKey];
+                }
+                agent = agent ? agent.trim() : "";
+                
+                let timeStr = row['Time'] || row['time'] || row['TIME'];
+
+                if (timeStr && pivot[agent]) {
+                    let timeParts = String(timeStr).toLowerCase().trim();
+                    let hour = parseInt(timeParts.split(':')[0]); 
+                    
+                    if(timeParts.includes('pm') && hour !== 12) hour += 12;
+                    if(timeParts.includes('am') && hour === 12) hour = 0;
+
+                    if (hours.includes(hour)) {
+                        pivot[agent][hour]++;
+                        pivot[agent].total++;
+                    }
+                }
+            });
+
+            let tableHTML = `
+                <thead>
+                    <tr class="bg-blue-800 text-white font-bold border-b-2 border-slate-700 shadow-sm">
+                        <th class="p-3 border-r border-slate-500 text-left">Row Labels</th>
+                        ${hours.map(h => `<th class="p-3 border-r border-slate-500">${h}</th>`).join('')}
+                        <th class="p-3">Grand Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+
+            let colTotals = { grand: 0 };
+            hours.forEach(h => colTotals[h] = 0);
+
+            selectedAgents.forEach(agent => {
+                let rowHtml = `<td class="p-3 border border-slate-300 font-extrabold text-left bg-slate-100 text-slate-800">${agent}</td>`;
+                hours.forEach(h => {
+                    let val = pivot[agent][h];
+                    colTotals[h] += val;
+                    rowHtml += `<td class="p-3 border border-slate-300 text-slate-700 font-medium">${val > 0 ? val : ''}</td>`;
+                });
+                colTotals.grand += pivot[agent].total;
+                rowHtml += `<td class="p-3 border border-slate-300 font-extrabold bg-blue-50 text-blue-900">${pivot[agent].total > 0 ? pivot[agent].total : ''}</td>`;
+                
+                tableHTML += `<tr class="hover:bg-blue-50 transition-colors">${rowHtml}</tr>`;
+            });
+
+            let totalRowHtml = `<td class="p-3 border border-slate-300 font-extrabold text-left bg-slate-200 text-slate-900">Grand Total</td>`;
+            hours.forEach(h => {
+                totalRowHtml += `<td class="p-3 border border-slate-300 font-extrabold bg-slate-200 text-slate-900">${colTotals[h] > 0 ? colTotals[h] : ''}</td>`;
+            });
+            totalRowHtml += `<td class="p-3 border border-slate-300 font-extrabold bg-blue-100 text-blue-900">${colTotals.grand}</td>`;
+            tableHTML += `<tr class="border-t-2 border-slate-400">${totalRowHtml}</tr></tbody>`;
+
+            document.getElementById('pivotTable').innerHTML = tableHTML;
+        }
+    </script>
+</body>
+</html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1e3a8a">
+    <title>M-Swasth Agent Dashboard</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    
+    <!-- jQuery & Select2 for Searchable Dropdown -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <style>
+        body { 
+            background-color: #e2e8f0; 
+            color: #1e293b; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            min-height: 100vh;
+        }
+        .header-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        /* 3D Card Effect */
+        .card-3d { 
+            background: linear-gradient(145deg, #ffffff, #f1f5f9);
+            border-radius: 16px; 
+            padding: 24px; 
+            box-shadow: 8px 8px 16px #cbd5e1, -8px -8px 16px #ffffff;
+            border: 1px solid #e2e8f0;
+            border-bottom: 5px solid #cbd5e1;
+            border-right: 2px solid #cbd5e1;
+            transition: transform 0.2s ease;
+        }
+        .card-3d:hover {
+            transform: translateY(-2px);
+        }
+
+        /* 3D Inner Elements */
+        .inner-3d {
+            background: #f8fafc;
+            box-shadow: inset 4px 4px 8px #cbd5e1, inset -4px -4px 8px #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .accent-orange { color: #ea580c; }
+        .bg-accent-orange { background: linear-gradient(135deg, #ea580c 0%, #f59e0b 100%); }
+        .accent-blue { color: #1e3a8a; }
+
+        .filter-select { 
+            background-color: #ffffff; 
+            color: #1e293b; 
+            border: 2px solid #cbd5e1; 
+            border-bottom: 4px solid #94a3b8;
+            border-radius: 10px; 
+            padding: 12px 16px; 
+            outline: none; 
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 1.1rem;
+            min-width: 180px;
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.05);
+            transition: all 0.1s;
+        }
+        .filter-select:active {
+            border-bottom: 2px solid #94a3b8;
+            transform: translateY(2px);
+        }
+        .filter-select:focus { border-color: #f59e0b; }
+
+        /* 3D Button */
+        .btn-3d {
+            background: linear-gradient(135deg, #ea580c 0%, #f59e0b 100%);
+            border-bottom: 4px solid #c2410c;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.1s;
+        }
+        .btn-3d:active {
+            border-bottom: 0px solid #c2410c;
+            transform: translateY(4px);
+        }
+
+        /* 3D Text Shadow */
+        .text-3d {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.15);
+        }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* Searchable Select2 Box Design */
+        .select2-container--default .select2-selection--multiple {
+            background-color: #ffffff !important;
+            border: 2px solid #cbd5e1 !important;
+            border-bottom: 4px solid #94a3b8 !important;
+            border-radius: 10px !important;
+            min-height: 48px !important;
+            padding: 4px !important;
+            font-weight: 800 !important;
+            color: #1e293b !important;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #e0f2fe !important;
+            border: 1px solid #7dd3fc !important;
+            color: #0369a1 !important;
+            border-radius: 6px !important;
+            padding: 4px 8px !important;
+            margin-top: 6px !important;
+            font-size: 0.95rem !important;
+        }
+    </style>
+</head>
+<body class="pb-12">
+    <!-- Header -->
+    <div class="header-bg text-white mb-8 relative z-10 border-b-[6px] border-[#0f172a]">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <!-- Exact Circular Image Logo for Header -->
+                <div class="bg-white rounded-full shadow-[4px_4px_10px_rgba(0,0,0,0.3)] overflow-hidden h-14 w-14 border-2 border-slate-200 flex justify-center items-center font-bold text-slate-800 text-xs">
+                   <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1e3a8a">
+    <title>M-Swasth Agent Dashboard</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    
+    <!-- jQuery & Select2 for Searchable Dropdown -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <style>
+        body { 
+            background-color: #e2e8f0; 
+            color: #1e293b; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            min-height: 100vh;
+        }
+        .header-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        /* 3D Card Effect */
+        .card-3d { 
+            background: linear-gradient(145deg, #ffffff, #f1f5f9);
+            border-radius: 16px; 
+            padding: 24px; 
+            box-shadow: 8px 8px 16px #cbd5e1, -8px -8px 16px #ffffff;
+            border: 1px solid #e2e8f0;
+            border-bottom: 5px solid #cbd5e1;
+            border-right: 2px solid #cbd5e1;
+            transition: transform 0.2s ease;
+        }
+        .card-3d:hover {
+            transform: translateY(-2px);
+        }
+
+        /* 3D Inner Elements */
+        .inner-3d {
+            background: #f8fafc;
+            box-shadow: inset 4px 4px 8px #cbd5e1, inset -4px -4px 8px #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .accent-orange { color: #ea580c; }
+        .bg-accent-orange { background: linear-gradient(135deg, #ea580c 0%, #f59e0b 100%); }
+        .accent-blue { color: #1e3a8a; }
+
+        .filter-select { 
+            background-color: #ffffff; 
+            color: #1e293b; 
+            border: 2px solid #cbd5e1; 
+            border-bottom: 4px solid #94a3b8;
+            border-radius: 10px; 
+            padding: 12px 16px; 
+            outline: none; 
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 1.1rem;
+            min-width: 180px;
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.05);
+            transition: all 0.1s;
+        }
+        .filter-select:active {
+            border-bottom: 2px solid #94a3b8;
+            transform: translateY(2px);
+        }
+        .filter-select:focus { border-color: #f59e0b; }
+
+        /* 3D Button */
+        .btn-3d {
+            background: linear-gradient(135deg, #ea580c 0%, #f59e0b 100%);
+            border-bottom: 4px solid #c2410c;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.1s;
+        }
+        .btn-3d:active {
+            border-bottom: 0px solid #c2410c;
+            transform: translateY(4px);
+        }
+
+        /* 3D Text Shadow */
+        .text-3d {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.15);
+        }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* Searchable Select2 Box Design */
+        .select2-container--default .select2-selection--multiple {
+            background-color: #ffffff !important;
+            border: 2px solid #cbd5e1 !important;
+            border-bottom: 4px solid #94a3b8 !important;
+            border-radius: 10px !important;
+            min-height: 48px !important;
+            padding: 4px !important;
+            font-weight: 800 !important;
+            color: #1e293b !important;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #e0f2fe !important;
+            border: 1px solid #7dd3fc !important;
+            color: #0369a1 !important;
+            border-radius: 6px !important;
+            padding: 4px 8px !important;
+            margin-top: 6px !important;
+            font-size: 0.95rem !important;
+        }
+    </style>
+</head>
+<body class="pb-12">
+    <!-- Header -->
+    <div class="header-bg text-white mb-8 relative z-10 border-b-[6px] border-[#0f172a]">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <!-- Exact Circular Image Logo for Header -->
+                <div class="bg-white rounded-full shadow-[4px_4px_10px_rgba(0,0,0,0.3)] overflow-hidden h-14 w-14 border-2 border-slate-200 flex justify-center items-center font-bold text-slate-800 text-xs">
+                   Logo
+                </div>
+                <div>
+                    <h1 class="text-3xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-200 text-3d">Analytics <span class="text-yellow-400">Pro</span></h1>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap items-center justify-center gap-4">
+                <div id="filtersContainer" class="hidden flex gap-4">
+                    <select id="dateSelect" class="filter-select"></select>
+                    <select id="agentSelect" class="filter-select"></select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- टैब स्विच करने के बटन्स -->
+    <div class="max-w-7xl mx-auto px-6 mb-6 flex flex-wrap justify-center gap-4 relative z-10">
+        <button onclick="switchTab('tab1')" id="btnTab1" class="btn-3d px-6 py-2 rounded-xl text-white font-bold bg-accent-orange">Break & Timings</button>
+        <button onclick="switchTab('tab2')" id="btnTab2" class="btn-3d px-6 py-2 rounded-xl text-white font-bold opacity-60">Hourly Cases Report</button>
+    </div>
+
+    <!-- पहला पेज (Tab 1) -->
+    <div id="tab1" class="block">
+        <div class="max-w-7xl mx-auto px-4 md:px-6 relative z-0">
+            
+            <div class="flex justify-center mb-6" id="headerUploadBtn">
+                <label for="csvFileInput" class="btn-3d text-white px-6 py-2.5 rounded-xl cursor-pointer font-extrabold block text-base border border-orange-400">
+                    📁 Upload CSV
+                </label>
+                <input type="file" id="csvFileInput" accept=".csv" class="hidden">
+            </div>
+
+            <div id="welcomeScreen" class="text-center mt-6 bg-white p-8 md:p-16 rounded-3xl shadow-[8px_8px_16px_#cbd5e1,_-8px_-8px_16px_#ffffff] max-w-3xl mx-auto border border-slate-200 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-blue-50 to-transparent"></div>
+                <div class="relative z-10">
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-slate-800 mb-4 text-3d">Welcome to Analytics Pro</h2>
+                    <p class="text-slate-600 text-lg font-medium mb-8">Upload your CSV file from the top right to view Break Timings and First/Last Case details.</p>
+                </div>
+            </div>
+
+            <div id="dashboardContent" class="hidden mt-6">
+                <!-- Tab 1 Data -->
+            </div>
+        </div>
+    </div>
+
+    <!-- दूसरा पेज (Tab 2: Hourly Cases) -->
+    <div id="tab2" class="hidden max-w-7xl mx-auto px-4 md:px-6 relative z-10">
+        <div class="card-3d mb-8">
+            <h2 class="text-2xl font-extrabold text-slate-800 mb-4 text-3d">Hourly Cases Analytics</h2>
+            
+            <div class="flex flex-wrap items-center gap-4 mb-6 p-4 inner-3d">
+                <input type="file" id="csvFileTab2" accept=".csv" class="hidden" onchange="handleTab2Upload(event)">
+                <label for="csvFileTab2" class="btn-3d text-white px-6 py-2.5 rounded-xl cursor-pointer font-extrabold shadow-md">
+                    📁 Upload Hourly CSV
+                </label>
+                
+                <select id="dateFilterTab2" class="filter-select" onchange="renderPivotTable()">
+                    <option value="All">All Dates</option>
+                </select>
+                
+                <div class="flex flex-col w-full md:w-auto flex-grow max-w-lg">
+                    <label class="text-xs font-bold text-slate-500 mb-1">Select Med Agent (Search Enabled)</label>
+                    <!-- Select Dropdown with Search Box -->
+                    <select id="agentFilterTab2" class="filter-select" multiple style="width:100%;">
+                    </select>
+                </div>
+            </div>
+
+            <!-- Pivot Table Container -->
+            <div class="inner-3d p-4 overflow-x-auto bg-white rounded-lg border border-slate-200 shadow-sm">
+                <table class="w-full border-collapse text-sm text-center whitespace-nowrap" id="pivotTable">
+                    <tbody>
+                        <tr>
+                            <td class="p-8 text-slate-400 font-bold text-lg">Please upload a CSV file to view the Hourly Cases Report.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Javascript Logic -->
+    <script>
+        function switchTab(tabId) {
+            document.getElementById('tab1').classList.toggle('hidden', tabId !== 'tab1');
+            document.getElementById('tab1').classList.toggle('block', tabId === 'tab1');
+            
+            document.getElementById('tab2').classList.toggle('hidden', tabId !== 'tab2');
+            document.getElementById('tab2').classList.toggle('block', tabId === 'tab2');
+
+            document.getElementById('btnTab1').classList.toggle('opacity-60', tabId !== 'tab1');
+            document.getElementById('btnTab2').classList.toggle('opacity-60', tabId !== 'tab2');
+            
+            document.getElementById('headerUploadBtn').style.display = (tabId === 'tab1') ? 'flex' : 'none';
+        }
+
+        let tab2Data = [];
+
+        function handleTab2Upload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    tab2Data = results.data;
+                    populateTab2Filters();
+                    renderPivotTable();
+                }
+            });
+        }
+
+        function populateTab2Filters() {
+            const dateSelect = document.getElementById('dateFilterTab2');
+            const agentSelect = document.getElementById('agentFilterTab2');
+            const $agentSelect = $(agentSelect);
+            
+            let dates = new Set();
+            let agents = new Set();
+
+            tab2Data.forEach(row => {
+                if(row['Date']) dates.add(row['Date']);
+                
+                // Advanced Agent Capture (Fix for Rajni N A and others)
+                let agentName = row['Med Agent'] || row['Agent'] || row['Name'] || row['Agent Name'];
+                if(!agentName) {
+                    let keys = Object.keys(row);
+                    let matchKey = keys.find(k => k.toLowerCase().includes('agent') || k.toLowerCase().includes('name'));
+                    if(matchKey) agentName = row[matchKey];
+                }
+                
+                if(agentName && agentName.trim() !== "") {
+                    agents.add(agentName.trim());
+                }
+            });
+
+            // Set Dates
+            dateSelect.innerHTML = '<option value="All">All Dates</option>';
+            dates.forEach(d => dateSelect.innerHTML += `<option value="${d}">${d}</option>`);
+
+            // Destroy Select2 before inserting new options
+            if ($agentSelect.hasClass("select2-hidden-accessible")) {
+                $agentSelect.select2('destroy');
+            }
+
+            // Set Agents & Sort Alphabetically
+            agentSelect.innerHTML = '';
+            let sortedAgents = Array.from(agents).sort();
+            sortedAgents.forEach(a => {
+                agentSelect.innerHTML += `<option value="${a}" selected>${a}</option>`;
+            });
+
+            // Initialize Searchable Dropdown (Select2)
+            $agentSelect.select2({
+                placeholder: "🔍 Search Agent Here...",
+                width: '100%',
+                allowClear: true
+            });
+
+            // Listen to select2 changes to update table
+            $agentSelect.on('change', function() {
+                renderPivotTable();
+            });
+        }
+
+        function renderPivotTable() {
+            if(tab2Data.length === 0) return;
+
+            const selectedDate = document.getElementById('dateFilterTab2').value;
+            
+            // Get selected options accurately from Select2
+            const selectedAgents = $('#agentFilterTab2').val() || [];
+
+            let filteredData = tab2Data.filter(row => {
+                const dateMatch = selectedDate === 'All' || row['Date'] === selectedDate;
+                
+                // Match with robust agent extraction
+                let agentName = row['Med Agent'] || row['Agent'] || row['Name'] || row['Agent Name'];
+                if(!agentName) {
+                    let keys = Object.keys(row);
+                    let matchKey = keys.find(k => k.toLowerCase().includes('agent') || k.toLowerCase().includes('name'));
+                    if(matchKey) agentName = row[matchKey];
+                }
+                agentName = agentName ? agentName.trim() : "";
+
+                const agentMatch = selectedAgents.includes(agentName);
+                return dateMatch && agentMatch;
+            });
+
+            let pivot = {};
+            const hours = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+            
+            selectedAgents.forEach(agent => {
+                pivot[agent] = { total: 0 };
+                hours.forEach(h => pivot[agent][h] = 0);
+            });
+
+            filteredData.forEach(row => {
+                let agent = row['Med Agent'] || row['Agent'] || row['Name'] || row['Agent Name'];
+                if(!agent) {
+                    let keys = Object.keys(row);
+                    let matchKey = keys.find(k => k.toLowerCase().includes('agent') || k.toLowerCase().includes('name'));
+                    if(matchKey) agent = row[matchKey];
+                }
+                agent = agent ? agent.trim() : "";
+                
+                let timeStr = row['Time'] || row['time'] || row['TIME'];
+
+                if (timeStr && pivot[agent]) {
+                    let timeParts = String(timeStr).toLowerCase().trim();
+                    let hour = parseInt(timeParts.split(':')[0]); 
+                    
+                    if(timeParts.includes('pm') && hour !== 12) hour += 12;
+                    if(timeParts.includes('am') && hour === 12) hour = 0;
+
+                    if (hours.includes(hour)) {
+                        pivot[agent][hour]++;
+                        pivot[agent].total++;
+                    }
+                }
+            });
+
+            let tableHTML = `
+                <thead>
+                    <tr class="bg-blue-800 text-white font-bold border-b-2 border-slate-700 shadow-sm">
+                        <th class="p-3 border-r border-slate-500 text-left">Row Labels</th>
+                        ${hours.map(h => `<th class="p-3 border-r border-slate-500">${h}</th>`).join('')}
+                        <th class="p-3">Grand Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+
+            let colTotals = { grand: 0 };
+            hours.forEach(h => colTotals[h] = 0);
+
+            selectedAgents.forEach(agent => {
+                let rowHtml = `<td class="p-3 border border-slate-300 font-extrabold text-left bg-slate-100 text-slate-800">${agent}</td>`;
+                hours.forEach(h => {
+                    let val = pivot[agent][h];
+                    colTotals[h] += val;
+                    rowHtml += `<td class="p-3 border border-slate-300 text-slate-700 font-medium">${val > 0 ? val : ''}</td>`;
+                });
+                colTotals.grand += pivot[agent].total;
+                rowHtml += `<td class="p-3 border border-slate-300 font-extrabold bg-blue-50 text-blue-900">${pivot[agent].total > 0 ? pivot[agent].total : ''}</td>`;
+                
+                tableHTML += `<tr class="hover:bg-blue-50 transition-colors">${rowHtml}</tr>`;
+            });
+
+            let totalRowHtml = `<td class="p-3 border border-slate-300 font-extrabold text-left bg-slate-200 text-slate-900">Grand Total</td>`;
+            hours.forEach(h => {
+                totalRowHtml += `<td class="p-3 border border-slate-300 font-extrabold bg-slate-200 text-slate-900">${colTotals[h] > 0 ? colTotals[h] : ''}</td>`;
+            });
+            totalRowHtml += `<td class="p-3 border border-slate-300 font-extrabold bg-blue-100 text-blue-900">${colTotals.grand}</td>`;
+            tableHTML += `<tr class="border-t-2 border-slate-400">${totalRowHtml}</tr></tbody>`;
+
+            document.getElementById('pivotTable').innerHTML = tableHTML;
+        }
+    </script>
+</body>
+</html>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-200 text-3d">Analytics <span class="text-yellow-400">Pro</span></h1>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap items-center justify-center gap-4">
+                <div id="filtersContainer" class="hidden flex gap-4">
+                    <select id="dateSelect" class="filter-select"></select>
+                    <select id="agentSelect" class="filter-select"></select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- टैब स्विच करने के बटन्स -->
+    <div class="max-w-7xl mx-auto px-6 mb-6 flex flex-wrap justify-center gap-4 relative z-10">
+        <button onclick="switchTab('tab1')" id="btnTab1" class="btn-3d px-6 py-2 rounded-xl text-white font-bold bg-accent-orange">Break & Timings</button>
+        <button onclick="switchTab('tab2')" id="btnTab2" class="btn-3d px-6 py-2 rounded-xl text-white font-bold opacity-60">Hourly Cases Report</button>
+    </div>
+
+    <!-- पहला पेज (Tab 1) -->
+    <div id="tab1" class="block">
+        <div class="max-w-7xl mx-auto px-4 md:px-6 relative z-0">
+            
+            <div class="flex justify-center mb-6" id="headerUploadBtn">
+                <label for="csvFileInput" class="btn-3d text-white px-6 py-2.5 rounded-xl cursor-pointer font-extrabold block text-base border border-orange-400">
+                    📁 Upload CSV
+                </label>
+                <input type="file" id="csvFileInput" accept=".csv" class="hidden">
+            </div>
+
+            <div id="welcomeScreen" class="text-center mt-6 bg-white p-8 md:p-16 rounded-3xl shadow-[8px_8px_16px_#cbd5e1,_-8px_-8px_16px_#ffffff] max-w-3xl mx-auto border border-slate-200 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-blue-50 to-transparent"></div>
+                <div class="relative z-10">
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-slate-800 mb-4 text-3d">Welcome to Analytics Pro</h2>
+                    <p class="text-slate-600 text-lg font-medium mb-8">Upload your CSV file from the top right to view Break Timings and First/Last Case details.</p>
+                </div>
+            </div>
+
+            <div id="dashboardContent" class="hidden mt-6">
+                <!-- Tab 1 Data -->
+            </div>
+        </div>
+    </div>
+
+    <!-- दूसरा पेज (Tab 2: Hourly Cases) -->
+    <div id="tab2" class="hidden max-w-7xl mx-auto px-4 md:px-6 relative z-10">
+        <div class="card-3d mb-8">
+            <h2 class="text-2xl font-extrabold text-slate-800 mb-4 text-3d">Hourly Cases Analytics</h2>
+            
+            <div class="flex flex-wrap items-center gap-4 mb-6 p-4 inner-3d">
+                <input type="file" id="csvFileTab2" accept=".csv" class="hidden" onchange="handleTab2Upload(event)">
+                <label for="csvFileTab2" class="btn-3d text-white px-6 py-2.5 rounded-xl cursor-pointer font-extrabold shadow-md">
+                    📁 Upload Hourly CSV
+                </label>
+                
+                <select id="dateFilterTab2" class="filter-select" onchange="renderPivotTable()">
+                    <option value="All">All Dates</option>
+                </select>
+                
+                <div class="flex flex-col w-full md:w-auto flex-grow max-w-lg">
+                    <label class="text-xs font-bold text-slate-500 mb-1">Select Med Agent (Search Enabled)</label>
+                    <!-- Select Dropdown with Search Box -->
+                    <select id="agentFilterTab2" class="filter-select" multiple style="width:100%;">
+                    </select>
+                </div>
+            </div>
+
+            <!-- Pivot Table Container -->
+            <div class="inner-3d p-4 overflow-x-auto bg-white rounded-lg border border-slate-200 shadow-sm">
+                <table class="w-full border-collapse text-sm text-center whitespace-nowrap" id="pivotTable">
+                    <tbody>
+                        <tr>
+                            <td class="p-8 text-slate-400 font-bold text-lg">Please upload a CSV file to view the Hourly Cases Report.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Javascript Logic -->
+    <script>
+        function switchTab(tabId) {
+            document.getElementById('tab1').classList.toggle('hidden', tabId !== 'tab1');
+            document.getElementById('tab1').classList.toggle('block', tabId === 'tab1');
+            
+            document.getElementById('tab2').classList.toggle('hidden', tabId !== 'tab2');
+            document.getElementById('tab2').classList.toggle('block', tabId === 'tab2');
+
+            document.getElementById('btnTab1').classList.toggle('opacity-60', tabId !== 'tab1');
+            document.getElementById('btnTab2').classList.toggle('opacity-60', tabId !== 'tab2');
+            
+            document.getElementById('headerUploadBtn').style.display = (tabId === 'tab1') ? 'flex' : 'none';
+        }
+
+        let tab2Data = [];
+
+        function handleTab2Upload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    tab2Data = results.data;
+                    populateTab2Filters();
+                    renderPivotTable();
+                }
+            });
+        }
+
+        function populateTab2Filters() {
+            const dateSelect = document.getElementById('dateFilterTab2');
+            const agentSelect = document.getElementById('agentFilterTab2');
+            const $agentSelect = $(agentSelect);
+            
+            let dates = new Set();
+            let agents = new Set();
+
+            tab2Data.forEach(row => {
+                if(row['Date']) dates.add(row['Date']);
+                
+                // Advanced Agent Capture (Fix for Rajni N A and others)
+                let agentName = row['Med Agent'] || row['Agent'] || row['Name'] || row['Agent Name'];
+                if(!agentName) {
+                    let keys = Object.keys(row);
+                    let matchKey = keys.find(k => k.toLowerCase().includes('agent') || k.toLowerCase().includes('name'));
+                    if(matchKey) agentName = row[matchKey];
+                }
+                
+                if(agentName && agentName.trim() !== "") {
+                    agents.add(agentName.trim());
+                }
+            });
+
+            // Set Dates
+            dateSelect.innerHTML = '<option value="All">All Dates</option>';
+            dates.forEach(d => dateSelect.innerHTML += `<option value="${d}">${d}</option>`);
+
+            // Destroy Select2 before inserting new options
+            if ($agentSelect.hasClass("select2-hidden-accessible")) {
+                $agentSelect.select2('destroy');
+            }
+
+            // Set Agents & Sort Alphabetically
+            agentSelect.innerHTML = '';
+            let sortedAgents = Array.from(agents).sort();
+            sortedAgents.forEach(a => {
+                agentSelect.innerHTML += `<option value="${a}" selected>${a}</option>`;
+            });
+
+            // Initialize Searchable Dropdown (Select2)
+            $agentSelect.select2({
+                placeholder: "🔍 Search Agent Here...",
+                width: '100%',
+                allowClear: true
+            });
+
+            // Listen to select2 changes to update table
+            $agentSelect.on('change', function() {
+                renderPivotTable();
+            });
+        }
+
+        function renderPivotTable() {
+            if(tab2Data.length === 0) return;
+
+            const selectedDate = document.getElementById('dateFilterTab2').value;
+            
+            // Get selected options accurately from Select2
+            const selectedAgents = $('#agentFilterTab2').val() || [];
+
+            let filteredData = tab2Data.filter(row => {
+                const dateMatch = selectedDate === 'All' || row['Date'] === selectedDate;
+                
+                // Match with robust agent extraction
+                let agentName = row['Med Agent'] || row['Agent'] || row['Name'] || row['Agent Name'];
+                if(!agentName) {
+                    let keys = Object.keys(row);
+                    let matchKey = keys.find(k => k.toLowerCase().includes('agent') || k.toLowerCase().includes('name'));
+                    if(matchKey) agentName = row[matchKey];
+                }
+                agentName = agentName ? agentName.trim() : "";
+
+                const agentMatch = selectedAgents.includes(agentName);
+                return dateMatch && agentMatch;
+            });
+
+            let pivot = {};
+            const hours = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+            
+            selectedAgents.forEach(agent => {
+                pivot[agent] = { total: 0 };
+                hours.forEach(h => pivot[agent][h] = 0);
+            });
+
+            filteredData.forEach(row => {
+                let agent = row['Med Agent'] || row['Agent'] || row['Name'] || row['Agent Name'];
+                if(!agent) {
+                    let keys = Object.keys(row);
+                    let matchKey = keys.find(k => k.toLowerCase().includes('agent') || k.toLowerCase().includes('name'));
+                    if(matchKey) agent = row[matchKey];
+                }
+                agent = agent ? agent.trim() : "";
+                
+                let timeStr = row['Time'] || row['time'] || row['TIME'];
+
+                if (timeStr && pivot[agent]) {
+                    let timeParts = String(timeStr).toLowerCase().trim();
+                    let hour = parseInt(timeParts.split(':')[0]); 
+                    
+                    if(timeParts.includes('pm') && hour !== 12) hour += 12;
+                    if(timeParts.includes('am') && hour === 12) hour = 0;
+
+                    if (hours.includes(hour)) {
+                        pivot[agent][hour]++;
+                        pivot[agent].total++;
+                    }
+                }
+            });
+
+            let tableHTML = `
+                <thead>
+                    <tr class="bg-blue-800 text-white font-bold border-b-2 border-slate-700 shadow-sm">
+                        <th class="p-3 border-r border-slate-500 text-left">Row Labels</th>
+                        ${hours.map(h => `<th class="p-3 border-r border-slate-500">${h}</th>`).join('')}
+                        <th class="p-3">Grand Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+
+            let colTotals = { grand: 0 };
+            hours.forEach(h => colTotals[h] = 0);
+
+            selectedAgents.forEach(agent => {
+                let rowHtml = `<td class="p-3 border border-slate-300 font-extrabold text-left bg-slate-100 text-slate-800">${agent}</td>`;
+                hours.forEach(h => {
+                    let val = pivot[agent][h];
+                    colTotals[h] += val;
+                    rowHtml += `<td class="p-3 border border-slate-300 text-slate-700 font-medium">${val > 0 ? val : ''}</td>`;
+                });
+                colTotals.grand += pivot[agent].total;
+                rowHtml += `<td class="p-3 border border-slate-300 font-extrabold bg-blue-50 text-blue-900">${pivot[agent].total > 0 ? pivot[agent].total : ''}</td>`;
+                
+                tableHTML += `<tr class="hover:bg-blue-50 transition-colors">${rowHtml}</tr>`;
+            });
+
+            let totalRowHtml = `<td class="p-3 border border-slate-300 font-extrabold text-left bg-slate-200 text-slate-900">Grand Total</td>`;
+            hours.forEach(h => {
+                totalRowHtml += `<td class="p-3 border border-slate-300 font-extrabold bg-slate-200 text-slate-900">${colTotals[h] > 0 ? colTotals[h] : ''}</td>`;
+            });
+            totalRowHtml += `<td class="p-3 border border-slate-300 font-extrabold bg-blue-100 text-blue-900">${colTotals.grand}</td>`;
+            tableHTML += `<tr class="border-t-2 border-slate-400">${totalRowHtml}</tr></tbody>`;
+
+            document.getElementById('pivotTable').innerHTML = tableHTML;
+        }
+    </script>
+</body>
+</html> 
+                </div>
+                <div>
+                    <h1 class="text-3xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-200 text-3d">Analytics <span class="text-yellow-400">Pro</span></h1>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap items-center justify-center gap-4">
+                <div id="filtersContainer" class="hidden flex gap-4">
+                    <select id="dateSelect" class="filter-select"></select>
+                    <select id="agentSelect" class="filter-select"></select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- टैब स्विच करने के बटन्स -->
+    <div class="max-w-7xl mx-auto px-6 mb-6 flex flex-wrap justify-center gap-4 relative z-10">
+        <button onclick="switchTab('tab1')" id="btnTab1" class="btn-3d px-6 py-2 rounded-xl text-white font-bold bg-accent-orange">Break & Timings</button>
+        <button onclick="switchTab('tab2')" id="btnTab2" class="btn-3d px-6 py-2 rounded-xl text-white font-bold opacity-60">Hourly Cases Report</button>
+    </div>
+
+    <!-- पहला पेज (Tab 1) -->
+    <div id="tab1" class="block">
+        <div class="max-w-7xl mx-auto px-4 md:px-6 relative z-0">
+            
+            <div class="flex justify-center mb-6" id="headerUploadBtn">
+                <label for="csvFileInput" class="btn-3d text-white px-6 py-2.5 rounded-xl cursor-pointer font-extrabold block text-base border border-orange-400">
+                    📁 Upload CSV
+                </label>
+                <input type="file" id="csvFileInput" accept=".csv" class="hidden">
+            </div>
+
+            <div id="welcomeScreen" class="text-center mt-6 bg-white p-8 md:p-16 rounded-3xl shadow-[8px_8px_16px_#cbd5e1,_-8px_-8px_16px_#ffffff] max-w-3xl mx-auto border border-slate-200 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-blue-50 to-transparent"></div>
+                <div class="relative z-10">
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-slate-800 mb-4 text-3d">Welcome to Analytics Pro</h2>
+                    <p class="text-slate-600 text-lg font-medium mb-8">Upload your CSV file from the top right to view Break Timings and First/Last Case details.</p>
+                </div>
+            </div>
+
+            <div id="dashboardContent" class="hidden mt-6">
+                <!-- Tab 1 Data -->
+            </div>
+        </div>
+    </div>
+
+    <!-- दूसरा पेज (Tab 2: Hourly Cases) -->
+    <div id="tab2" class="hidden max-w-7xl mx-auto px-4 md:px-6 relative z-10">
+        <div class="card-3d mb-8">
+            <h2 class="text-2xl font-extrabold text-slate-800 mb-4 text-3d">Hourly Cases Analytics</h2>
+            
+            <div class="flex flex-wrap items-center gap-4 mb-6 p-4 inner-3d">
+                <input type="file" id="csvFileTab2" accept=".csv" class="hidden" onchange="handleTab2Upload(event)">
+                <label for="csvFileTab2" class="btn-3d text-white px-6 py-2.5 rounded-xl cursor-pointer font-extrabold shadow-md">
+                    📁 Upload Hourly CSV
+                </label>
+                
+                <select id="dateFilterTab2" class="filter-select" onchange="renderPivotTable()">
+                    <option value="All">All Dates</option>
+                </select>
+                
+                <div class="flex flex-col w-full md:w-auto flex-grow max-w-lg">
+                    <label class="text-xs font-bold text-slate-500 mb-1">Select Med Agent (Search Enabled)</label>
+                    <!-- Select Dropdown with Search Box -->
+                    <select id="agentFilterTab2" class="filter-select" multiple style="width:100%;">
+                    </select>
+                </div>
+            </div>
+
+            <!-- Pivot Table Container -->
+            <div class="inner-3d p-4 overflow-x-auto bg-white rounded-lg border border-slate-200 shadow-sm">
+                <table class="w-full border-collapse text-sm text-center whitespace-nowrap" id="pivotTable">
+                    <tbody>
+                        <tr>
+                            <td class="p-8 text-slate-400 font-bold text-lg">Please upload a CSV file to view the Hourly Cases Report.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Javascript Logic -->
+    <script>
+        function switchTab(tabId) {
+            document.getElementById('tab1').classList.toggle('hidden', tabId !== 'tab1');
+            document.getElementById('tab1').classList.toggle('block', tabId === 'tab1');
+            
+            document.getElementById('tab2').classList.toggle('hidden', tabId !== 'tab2');
+            document.getElementById('tab2').classList.toggle('block', tabId === 'tab2');
+
+            document.getElementById('btnTab1').classList.toggle('opacity-60', tabId !== 'tab1');
+            document.getElementById('btnTab2').classList.toggle('opacity-60', tabId !== 'tab2');
+            
+            document.getElementById('headerUploadBtn').style.display = (tabId === 'tab1') ? 'flex' : 'none';
+        }
+
+        let tab2Data = [];
+
+        function handleTab2Upload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    tab2Data = results.data;
+                    populateTab2Filters();
+                    renderPivotTable();
+                }
+            });
+        }
+
+        function populateTab2Filters() {
+            const dateSelect = document.getElementById('dateFilterTab2');
+            const agentSelect = document.getElementById('agentFilterTab2');
+            const $agentSelect = $(agentSelect);
+            
+            let dates = new Set();
+            let agents = new Set();
+
+            tab2Data.forEach(row => {
+                if(row['Date']) dates.add(row['Date']);
+                
+                // Advanced Agent Capture (Fix for Rajni N A and others)
+                let agentName = row['Med Agent'] || row['Agent'] || row['Name'] || row['Agent Name'];
+                if(!agentName) {
+                    let keys = Object.keys(row);
+                    let matchKey = keys.find(k => k.toLowerCase().includes('agent') || k.toLowerCase().includes('name'));
+                    if(matchKey) agentName = row[matchKey];
+                }
+                
+                if(agentName && agentName.trim() !== "") {
+                    agents.add(agentName.trim());
+                }
+            });
+
+            // Set Dates
+            dateSelect.innerHTML = '<option value="All">All Dates</option>';
+            dates.forEach(d => dateSelect.innerHTML += `<option value="${d}">${d}</option>`);
+
+            // Destroy Select2 before inserting new options
+            if ($agentSelect.hasClass("select2-hidden-accessible")) {
+                $agentSelect.select2('destroy');
+            }
+
+            // Set Agents & Sort Alphabetically
+            agentSelect.innerHTML = '';
+            let sortedAgents = Array.from(agents).sort();
+            sortedAgents.forEach(a => {
+                agentSelect.innerHTML += `<option value="${a}" selected>${a}</option>`;
+            });
+
+            // Initialize Searchable Dropdown (Select2)
+            $agentSelect.select2({
+                placeholder: "🔍 Search Agent Here...",
+                width: '100%',
+                allowClear: true
+            });
+
+            // Listen to select2 changes to update table
+            $agentSelect.on('change', function() {
+                renderPivotTable();
+            });
+        }
+
+        function renderPivotTable() {
+            if(tab2Data.length === 0) return;
+
+            const selectedDate = document.getElementById('dateFilterTab2').value;
+            
+            // Get selected options accurately from Select2
+            const selectedAgents = $('#agentFilterTab2').val() || [];
+
+            let filteredData = tab2Data.filter(row => {
+                const dateMatch = selectedDate === 'All' || row['Date'] === selectedDate;
+                
+                // Match with robust agent extraction
+                let agentName = row['Med Agent'] || row['Agent'] || row['Name'] || row['Agent Name'];
+                if(!agentName) {
+                    let keys = Object.keys(row);
+                    let matchKey = keys.find(k => k.toLowerCase().includes('agent') || k.toLowerCase().includes('name'));
+                    if(matchKey) agentName = row[matchKey];
+                }
+                agentName = agentName ? agentName.trim() : "";
+
+                const agentMatch = selectedAgents.includes(agentName);
+                return dateMatch && agentMatch;
+            });
+
+            let pivot = {};
+            const hours = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+            
+            selectedAgents.forEach(agent => {
+                pivot[agent] = { total: 0 };
+                hours.forEach(h => pivot[agent][h] = 0);
+            });
+
+            filteredData.forEach(row => {
+                let agent = row['Med Agent'] || row['Agent'] || row['Name'] || row['Agent Name'];
+                if(!agent) {
+                    let keys = Object.keys(row);
+                    let matchKey = keys.find(k => k.toLowerCase().includes('agent') || k.toLowerCase().includes('name'));
+                    if(matchKey) agent = row[matchKey];
+                }
+                agent = agent ? agent.trim() : "";
+                
+                let timeStr = row['Time'] || row['time'] || row['TIME'];
+
+                if (timeStr && pivot[agent]) {
+                    let timeParts = String(timeStr).toLowerCase().trim();
+                    let hour = parseInt(timeParts.split(':')[0]); 
+                    
+                    if(timeParts.includes('pm') && hour !== 12) hour += 12;
+                    if(timeParts.includes('am') && hour === 12) hour = 0;
+
+                    if (hours.includes(hour)) {
+                        pivot[agent][hour]++;
+                        pivot[agent].total++;
+                    }
+                }
+            });
+
+            let tableHTML = `
+                <thead>
+                    <tr class="bg-blue-800 text-white font-bold border-b-2 border-slate-700 shadow-sm">
+                        <th class="p-3 border-r border-slate-500 text-left">Row Labels</th>
+                        ${hours.map(h => `<th class="p-3 border-r border-slate-500">${h}</th>`).join('')}
+                        <th class="p-3">Grand Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+
+            let colTotals = { grand: 0 };
+            hours.forEach(h => colTotals[h] = 0);
+
+            selectedAgents.forEach(agent => {
+                let rowHtml = `<td class="p-3 border border-slate-300 font-extrabold text-left bg-slate-100 text-slate-800">${agent}</td>`;
+                hours.forEach(h => {
+                    let val = pivot[agent][h];
+                    colTotals[h] += val;
+                    rowHtml += `<td class="p-3 border border-slate-300 text-slate-700 font-medium">${val > 0 ? val : ''}</td>`;
+                });
+                colTotals.grand += pivot[agent].total;
+                rowHtml += `<td class="p-3 border border-slate-300 font-extrabold bg-blue-50 text-blue-900">${pivot[agent].total > 0 ? pivot[agent].total : ''}</td>`;
+                
+                tableHTML += `<tr class="hover:bg-blue-50 transition-colors">${rowHtml}</tr>`;
+            });
+
+            let totalRowHtml = `<td class="p-3 border border-slate-300 font-extrabold text-left bg-slate-200 text-slate-900">Grand Total</td>`;
+            hours.forEach(h => {
+                totalRowHtml += `<td class="p-3 border border-slate-300 font-extrabold bg-slate-200 text-slate-900">${colTotals[h] > 0 ? colTotals[h] : ''}</td>`;
+            });
+            totalRowHtml += `<td class="p-3 border border-slate-300 font-extrabold bg-blue-100 text-blue-900">${colTotals.grand}</td>`;
+            tableHTML += `<tr class="border-t-2 border-slate-400">${totalRowHtml}</tr></tbody>`;
+
+            document.getElementById('pivotTable').innerHTML = tableHTML;
+        }
+    </script>
+</body>
+</html> 
+                </div>
+                <div>
+                    <h1 class="text-3xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-200 text-3d">Analytics <span class="text-yellow-400">Pro</span></h1>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap items-center justify-center gap-4">
+                <div id="filtersContainer" class="hidden flex gap-4">
+                    <select id="dateSelect" class="filter-select"></select>
+                    <select id="agentSelect" class="filter-select"></select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- टैब स्विच करने के बटन्स -->
+    <div class="max-w-7xl mx-auto px-6 mb-6 flex flex-wrap justify-center gap-4 relative z-10">
+        <button onclick="switchTab('tab1')" id="btnTab1" class="btn-3d px-6 py-2 rounded-xl text-white font-bold bg-accent-orange">Break & Timings</button>
+        <button onclick="switchTab('tab2')" id="btnTab2" class="btn-3d px-6 py-2 rounded-xl text-white font-bold opacity-60">Hourly Cases Report</button>
+    </div>
+
+    <!-- पहला पेज (Tab 1) -->
+    <div id="tab1" class="block">
+        <div class="max-w-7xl mx-auto px-4 md:px-6 relative z-0">
+            
+            <div class="flex justify-center mb-6" id="headerUploadBtn">
+                <label for="csvFileInput" class="btn-3d text-white px-6 py-2.5 rounded-xl cursor-pointer font-extrabold block text-base border border-orange-400">
+                    📁 Upload CSV
+                </label>
+                <input type="file" id="csvFileInput" accept=".csv" class="hidden">
+            </div>
+
+            <div id="welcomeScreen" class="text-center mt-6 bg-white p-8 md:p-16 rounded-3xl shadow-[8px_8px_16px_#cbd5e1,_-8px_-8px_16px_#ffffff] max-w-3xl mx-auto border border-slate-200 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-blue-50 to-transparent"></div>
+                <div class="relative z-10">
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-slate-800 mb-4 text-3d">Welcome to Analytics Pro</h2>
+                    <p class="text-slate-600 text-lg font-medium mb-8">Upload your CSV file from the top right to view Break Timings and First/Last Case details.</p>
+                </div>
+            </div>
+
+            <div id="dashboardContent" class="hidden mt-6">
+                <!-- Tab 1 Data -->
+            </div>
+        </div>
+    </div>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1e3a8a">
+    <title>M-Swasth Agent Dashboard</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    
+    <!-- jQuery & Select2 for Searchable Dropdown -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <style>
+        body { 
+            background-color: #e2e8f0; 
+            color: #1e293b; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            min-height: 100vh;
+        }
+        .header-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        /* 3D Card Effect */
+        .card-3d { 
+            background: linear-gradient(145deg, #ffffff, #f1f5f9);
+            border-radius: 16px; 
+            padding: 24px; 
+            box-shadow: 8px 8px 16px #cbd5e1, -8px -8px 16px #ffffff;
+            border: 1px solid #e2e8f0;
+            border-bottom: 5px solid #cbd5e1;
+            border-right: 2px solid #cbd5e1;
+            transition: transform 0.2s ease;
+        }
+        .card-3d:hover {
+            transform: translateY(-2px);
+        }
+
+        /* 3D Inner Elements */
+        .inner-3d {
+            background: #f8fafc;
+            box-shadow: inset 4px 4px 8px #cbd5e1, inset -4px -4px 8px #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .accent-orange { color: #ea580c; }
+        .bg-accent-orange { background: linear-gradient(135deg, #ea580c 0%, #f59e0b 100%); }
+        .accent-blue { color: #1e3a8a; }
+
+        .filter-select { 
+            background-color: #ffffff; 
+            color: #1e293b; 
+            border: 2px solid #cbd5e1; 
+            border-bottom: 4px solid #94a3b8;
+            border-radius: 10px; 
+            padding: 12px 16px; 
+            outline: none; 
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 1.1rem;
+            min-width: 180px;
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.05);
+            transition: all 0.1s;
+        }
+        .filter-select:active {
+            border-bottom: 2px solid #94a3b8;
+            transform: translateY(2px);
+        }
+        .filter-select:focus { border-color: #f59e0b; }
+
+        /* 3D Button */
+        .btn-3d {
+            background: linear-gradient(135deg, #ea580c 0%, #f59e0b 100%);
+            border-bottom: 4px solid #c2410c;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.1s;
+        }
+        .btn-3d:active {
+            border-bottom: 0px solid #c2410c;
+            transform: translateY(4px);
+        }
+
+        /* 3D Text Shadow */
+        .text-3d {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.15);
+        }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* Searchable Select2 Box Design */
+        .select2-container--default .select2-selection--multiple {
+            background-color: #ffffff !important;
+            border: 2px solid #cbd5e1 !important;
+            border-bottom: 4px solid #94a3b8 !important;
+            border-radius: 10px !important;
+            min-height: 48px !important;
+            padding: 4px !important;
+            font-weight: 800 !important;
+            color: #1e293b !important;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #e0f2fe !important;
+            border: 1px solid #7dd3fc !important;
+            color: #0369a1 !important;
+            border-radius: 6px !important;
+            padding: 4px 8px !important;
+            margin-top: 6px !important;
+            font-size: 0.95rem !important;
+        }
+    </style>
+</head>
+<body class="pb-12">
+    <!-- Header -->
+    <div class="header-bg text-white mb-8 relative z-10 border-b-[6px] border-[#0f172a]">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <!-- Exact Circular Image Logo for Header -->
+                <div class="bg-white rounded-full shadow-[4px_4px_10px_rgba(0,0,0,0.3)] overflow-hidden h-14 w-14 border-2 border-slate-200 flex justify-center items-center font-bold text-slate-800 text-xs">
+                   Logo
+                </div>
+                <div>
+                    <h1 class="text-3xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-200 text-3d">Analytics <span class="text-yellow-400">Pro</span></h1>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap items-center justify-center gap-4">
+                <div id="filtersContainer" class="hidden flex gap-4">
+                    <select id="dateSelect" class="filter-select"></select>
+                    <select id="agentSelect" class="filter-select"></select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- टैब स्विच करने के बटन्स -->
+    <div class="max-w-7xl mx-auto px-6 mb-6 flex flex-wrap justify-center gap-4 relative z-10">
+        <button onclick="switchTab('tab1')" id="btnTab1" class="btn-3d px-6 py-2 rounded-xl text-white font-bold bg-accent-orange">Break & Timings</button>
+        <button onclick="switchTab('tab2')" id="btnTab2" class="btn-3d px-6 py-2 rounded-xl text-white font-bold opacity-60">Hourly Cases Report</button>
+    </div>
+
+    <!-- पहला पेज (Tab 1) -->
+    <div id="tab1" class="block">
+        <div class="max-w-7xl mx-auto px-4 md:px-6 relative z-0">
+            
+            <div class="flex justify-center mb-6" id="headerUploadBtn">
+                <label for="csvFileInput" class="btn-3d text-white px-6 py-2.5 rounded-xl cursor-pointer font-extrabold block text-base border border-orange-400">
+                    📁 Upload CSV
+                </label>
+                <input type="file" id="csvFileInput" accept=".csv" class="hidden">
+            </div>
+
+            <div id="welcomeScreen" class="text-center mt-6 bg-white p-8 md:p-16 rounded-3xl shadow-[8px_8px_16px_#cbd5e1,_-8px_-8px_16px_#ffffff] max-w-3xl mx-auto border border-slate-200 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-blue-50 to-transparent"></div>
+                <div class="relative z-10">
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-slate-800 mb-4 text-3d">Welcome to Analytics Pro</h2>
+                    <p class="text-slate-600 text-lg font-medium mb-8">Upload your CSV file from the top right to view Break Timings and First/Last Case details.</p>
+                </div>
+            </div>
+
+            <div id="dashboardContent" class="hidden mt-6">
+                <!-- Tab 1 Data -->
+            </div>
+        </div>
+    </div>
+
+    <!-- दूसरा पेज (Tab 2: Hourly Cases) -->
+    <div id="tab2" class="hidden max-w-7xl mx-auto px-4 md:px-6 relative z-10">
+        <div class="card-3d mb-8">
+            <h2 class="text-2xl font-extrabold text-slate-800 mb-4 text-3d">Hourly Cases Analytics</h2>
+            
+            <div class="flex flex-wrap items-center gap-4 mb-6 p-4 inner-3d">
+                <input type="file" id="csvFileTab2" accept=".csv" class="hidden" onchange="handleTab2Upload(event)">
+                <label for="csvFileTab2" class="btn-3d text-white px-6 py-2.5 rounded-xl cursor-pointer font-extrabold shadow-md">
+                    📁 Upload Hourly CSV
+                </label>
+                
+                <select id="dateFilterTab2" class="filter-select" onchange="renderPivotTable()">
+                    <option value="All">All Dates</option>
+                </select>
+                
+                <div class="flex flex-col w-full md:w-auto flex-grow max-w-lg">
+                    <label class="text-xs font-bold text-slate-500 mb-1">Select Med Agent (Search Enabled)</label>
+                    <!-- Select Dropdown with Search Box -->
+                    <select id="agentFilterTab2" class="filter-select" multiple style="width:100%;">
+                    </select>
+                </div>
+            </div>
+
+            <!-- Pivot Table Container -->
+            <div class="inner-3d p-4 overflow-x-auto bg-white rounded-lg border border-slate-200 shadow-sm">
+                <table class="w-full border-collapse text-sm text-center whitespace-nowrap" id="pivotTable">
+                    <tbody>
+                        <tr>
+                            <td class="p-8 text-slate-400 font-bold text-lg">Please upload a CSV file to view the Hourly Cases Report.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Javascript Logic -->
+    <script>
+        function switchTab(tabId) {
+            document.getElementById('tab1').classList.toggle('hidden', tabId !== 'tab1');
+            document.getElementById('tab1').classList.toggle('block', tabId === 'tab1');
+            
+            document.getElementById('tab2').classList.toggle('hidden', tabId !== 'tab2');
+            document.getElementById('tab2').classList.toggle('block', tabId === 'tab2');
+
+            document.getElementById('btnTab1').classList.toggle('opacity-60', tabId !== 'tab1');
+            document.getElementById('btnTab2').classList.toggle('opacity-60', tabId !== 'tab2');
+            
+            document.getElementById('headerUploadBtn').style.display = (tabId === 'tab1') ? 'flex' : 'none';
+        }
+
+        let tab2Data = [];
+
+        function handleTab2Upload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    tab2Data = results.data;
+                    populateTab2Filters();
+                    renderPivotTable();
+                }
+            });
+        }
+
+        function populateTab2Filters() {
+            const dateSelect = document.getElementById('dateFilterTab2');
+            const agentSelect = document.getElementById('agentFilterTab2');
+            const $agentSelect = $(agentSelect);
+            
+            let dates = new Set();
+            let agents = new Set();
+
+            tab2Data.forEach(row => {
+                if(row['Date']) dates.add(row['Date']);
+                
+                // Advanced Agent Capture (Fix for Rajni N A and others)
+                let agentName = row['Med Agent'] || row['Agent'] || row['Name'] || row['Agent Name'];
+                if(!agentName) {
+                    let keys = Object.keys(row);
+                    let matchKey = keys.find(k => k.toLowerCase().includes('agent') || k.toLowerCase().includes('name'));
+                    if(matchKey) agentName = row[matchKey];
+                }
+                
+                if(agentName && agentName.trim() !== "") {
+                    agents.add(agentName.trim());
+                }
+            });
+
+            // Set Dates
+            dateSelect.innerHTML = '<option value="All">All Dates</option>';
+            dates.forEach(d => dateSelect.innerHTML += `<option value="${d}">${d}</option>`);
+
+            // Destroy Select2 before inserting new options
+            if ($agentSelect.hasClass("select2-hidden-accessible")) {
+                $agentSelect.select2('destroy');
+            }
+
+            // Set Agents & Sort Alphabetically
+            agentSelect.innerHTML = '';
+            let sortedAgents = Array.from(agents).sort();
+            sortedAgents.forEach(a => {
+                agentSelect.innerHTML += `<option value="${a}" selected>${a}</option>`;
+            });
+
+            // Initialize Searchable Dropdown (Select2)
+            $agentSelect.select2({
+                placeholder: "🔍 Search Agent Here...",
+                width: '100%',
+                allowClear: true
+            });
+
+            // Listen to select2 changes to update table
+            $agentSelect.on('change', function() {
+                renderPivotTable();
+            });
+        }
+
+        function renderPivotTable() {
+            if(tab2Data.length === 0) return;
+
+            const selectedDate = document.getElementById('dateFilterTab2').value;
+            
+            // Get selected options accurately from Select2
+            const selectedAgents = $('#agentFilterTab2').val() || [];
+
+            let filteredData = tab2Data.filter(row => {
+                const dateMatch = selectedDate === 'All' || row['Date'] === selectedDate;
+                
+                // Match with robust agent extraction
+                let agentName = row['Med Agent'] || row['Agent'] || row['Name'] || row['Agent Name'];
+                if(!agentName) {
+                    let keys = Object.keys(row);
+                    let matchKey = keys.find(k => k.toLowerCase().includes('agent') || k.toLowerCase().includes('name'));
+                    if(matchKey) agentName = row[matchKey];
+                }
+                agentName = agentName ? agentName.trim() : "";
+
+                const agentMatch = selectedAgents.includes(agentName);
+                return dateMatch && agentMatch;
+            });
+
+            let pivot = {};
+            const hours = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+            
+            selectedAgents.forEach(agent => {
+                pivot[agent] = { total: 0 };
+                hours.forEach(h => pivot[agent][h] = 0);
+            });
+
+            filteredData.forEach(row => {
+                let agent = row['Med Agent'] || row['Agent'] || row['Name'] || row['Agent Name'];
+                if(!agent) {
+                    let keys = Object.keys(row);
+                    let matchKey = keys.find(k => k.toLowerCase().includes('agent') || k.toLowerCase().includes('name'));
+                    if(matchKey) agent = row[matchKey];
+                }
+                agent = agent ? agent.trim() : "";
+                
+                let timeStr = row['Time'] || row['time'] || row['TIME'];
+
+                if (timeStr && pivot[agent]) {
+                    let timeParts = String(timeStr).toLowerCase().trim();
+                    let hour = parseInt(timeParts.split(':')[0]); 
+                    
+                    if(timeParts.includes('pm') && hour !== 12) hour += 12;
+                    if(timeParts.includes('am') && hour === 12) hour = 0;
+
+                    if (hours.includes(hour)) {
+                        pivot[agent][hour]++;
+                        pivot[agent].total++;
+                    }
+                }
+            });
+
+            let tableHTML = `
+                <thead>
+                    <tr class="bg-blue-800 text-white font-bold border-b-2 border-slate-700 shadow-sm">
+                        <th class="p-3 border-r border-slate-500 text-left">Row Labels</th>
+                        ${hours.map(h => `<th class="p-3 border-r border-slate-500">${h}</th>`).join('')}
+                        <th class="p-3">Grand Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+
+            let colTotals = { grand: 0 };
+            hours.forEach(h => colTotals[h] = 0);
+
+            selectedAgents.forEach(agent => {
+                let rowHtml = `<td class="p-3 border border-slate-300 font-extrabold text-left bg-slate-100 text-slate-800">${agent}</td>`;
+                hours.forEach(h => {
+                    let val = pivot[agent][h];
+                    colTotals[h] += val;
+                    rowHtml += `<td class="p-3 border border-slate-300 text-slate-700 font-medium">${val > 0 ? val : ''}</td>`;
+                });
+                colTotals.grand += pivot[agent].total;
+                rowHtml += `<td class="p-3 border border-slate-300 font-extrabold bg-blue-50 text-blue-900">${pivot[agent].total > 0 ? pivot[agent].total : ''}</td>`;
+                
+                tableHTML += `<tr class="hover:bg-blue-50 transition-colors">${rowHtml}</tr>`;
+            });
+
+            let totalRowHtml = `<td class="p-3 border border-slate-300 font-extrabold text-left bg-slate-200 text-slate-900">Grand Total</td>`;
+            hours.forEach(h => {
+                totalRowHtml += `<td class="p-3 border border-slate-300 font-extrabold bg-slate-200 text-slate-900">${colTotals[h] > 0 ? colTotals[h] : ''}</td>`;
+            });
+            totalRowHtml += `<td class="p-3 border border-slate-300 font-extrabold bg-blue-100 text-blue-900">${colTotals.grand}</td>`;
+            tableHTML += `<tr class="border-t-2 border-slate-400">${totalRowHtml}</tr></tbody>`;
+
+            document.getElementById('pivotTable').innerHTML = tableHTML;
+        }
+    </script>
+</body>
+</html>￼Enter    <!-- दूसरा पेज (Tab 2: Hourly Cases) -->
+    <div id="tab2" class="hidden max-w-7xl mx-auto px-4 md:px-6 relative z-10">
+        <div class="card-3d mb-8">
+            <h2 class="text-2xl font-extrabold text-slate-800 mb-4 text-3d">Hourly Cases Analytics</h2>
+            
+            <div class="flex flex-wrap items-center gap-4 mb-6 p-4 inner-3d">
+                <input type="file" id="csvFileTab2" accept=".csv" class="hidden" onchange="handleTab2Upload(event)">
+                <label for="csvFileTab2" class="btn-3d text-white px-6 py-2.5 rounded-xl cursor-pointer font-extrabold shadow-md">
+                    📁 Upload Hourly CSV
+                </label>
+                
+                <select id="dateFilterTab2" class="filter-select" onchange="renderPivotTable()">
+                    <option value="All">All Dates</option>
+                </select>
+                
+                <div class="flex flex-col w-full md:w-auto flex-grow max-w-lg">
+                    <label class="text-xs font-bold text-slate-500 mb-1">Select Med Agent (Search Enabled)</label>
+                    <!-- Select Dropdown with Search Box -->
+                    <select id="agentFilterTab2" class="filter-select" multiple style="width:100%;">
+                    </select>
+                </div>
+            </div>
+
+            <!-- Pivot Table Container -->
+            <div class="inner-3d p-4 overflow-x-auto bg-white rounded-lg border border-slate-200 shadow-sm">
+                <table class="w-full border-collapse text-sm text-center whitespace-nowrap" id="pivotTable">
+                    <tbody>
+                        <tr>
+                            <td class="p-8 text-slate-400 font-bold text-lg">Please upload a CSV file to view the Hourly Cases Report.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Javascript Logic -->
+    <script>
+        function switchTab(tabId) {
+            document.getElementById('tab1').classList.toggle('hidden', tabId !== 'tab1');
+            document.getElementById('tab1').classList.toggle('block', tabId === 'tab1');
+            
+            document.getElementById('tab2').classList.toggle('hidden', tabId !== 'tab2');
+            document.getElementById('tab2').classList.toggle('block', tabId === 'tab2');
+
+            document.getElementById('btnTab1').classList.toggle('opacity-60', tabId !== 'tab1');
+            document.getElementById('btnTab2').classList.toggle('opacity-60', tabId !== 'tab2');
+            
+            document.getElementById('headerUploadBtn').style.display = (tabId === 'tab1') ? 'flex' : 'none';
+        }
+
+        let tab2Data = [];
+
+        function handleTab2Upload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    tab2Data = results.data;
+                    populateTab2Filters();
+                    renderPivotTable();
+                }
+            });
+        }
+
+        function populateTab2Filters() {
+            const dateSelect = document.getElementById('dateFilterTab2');
+            const agentSelect = document.getElementById('agentFilterTab2');
+            const $agentSelect = $(agentSelect);
+      
+            let dates = new Set();
+            let agents = new Set();
+
+            tab2Data.forEach(row => {
+                if(row['Date']) dates.add(row['Date']);
+                
+                // Advanced Agent Capture (Fix for Rajni N A and others)
+                let agentName = row['Med Agent'] || row['Agent'] || row['Name'] || row['Agent Name'];
+                if(!agentName) {
+                    let keys = Object.keys(row);
+                    let matchKey = keys.find(k => k.toLowerCase().includes('agent') || k.toLowerCase().includes('name'));
+                    if(matchKey) agentName = row[matchKey];
+                }
+                
+                if(agentName && agentName.trim() !== "") {
+                    agents.add(agentName.trim());
+                }
+            });
+
+            // Set Dates
+            dateSelect.innerHTML = '<option value="All">All Dates</option>';
+            dates.forEach(d => dateSelect.innerHTML += `<option value="${d}">${d}</option>`);
+
+            // Destroy Select2 before inserting new options
+            if ($agentSelect.hasClass("select2-hidden-accessible")) {
+                $agentSelect.select2('destroy');
+            }
+
+            // Set Agents & Sort Alphabetically
+            agentSelect.innerHTML = '';
+            let sortedAgents = Array.from(agents).sort();
+            sortedAgents.forEach(a => {
+                agentSelect.innerHTML += `<option value="${a}" selected>${a}</option>`;
+            });
+
+            // Initialize Searchable Dropdown (Select2)
+            $agentSelect.select2({
+                placeholder: "🔍 Search Agent Here...",
+                width: '100%',
+                allowClear: true
+            });
+
+            // Listen to select2 changes to update table
+            $agentSelect.on('change', function() {
+                renderPivotTable();
+            });
+        }
+
+        function renderPivotTable() {
+            if(tab2Data.length === 0) return;
+
+            const selectedDate = document.getElementById('dateFilterTab2').value;
+            
+            // Get selected options accurately from Select2
+            const selectedAgents = $('#agentFilterTab2').val() || [];
+
+            let filteredData = tab2Data.filter(row => {
+                const dateMatch = selectedDate === 'All' || row['Date'] === selectedDate;
+                
+                // Match with robust agent extraction
+                let agentName = row['Med Agent'] || row['Agent'] || row['Name'] || row['Agent Name'];
+                if(!agentName) {
+                    let keys = Object.keys(row);
+                    let matchKey = keys.find(k => k.toLowerCase().includes('agent') || k.toLowerCase().includes('name'));
+                    if(matchKey) agentName = row[matchKey];
+                }
+                agentName = agentName ? agentName.trim() : "";
+
+                const agentMatch = selectedAgents.includes(agentName);
+                return dateMatch && agentMatch;
+            });
